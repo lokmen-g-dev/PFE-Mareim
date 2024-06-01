@@ -1,26 +1,4 @@
-# api/management/commands/fetch_fortigate_status.py
-import requests
-import json
-from django.core.management.base import BaseCommand
-from api.models import FortiGateStatus
-
-class Command(BaseCommand):
-    help = 'Fetch FortiGate status and save it to the database'
-
-    def handle(self, *args, **kwargs):
-        fortigate_ip = '<FortiGate_IP>'
-        username = '<username>'
-        password = '<password>'
-
-        # Step 1: Send POST request to login
-        login_url = f'https://{fortigate_ip}/logincheck'
-        login_data = {
-            'username': username,
-            'secretkey': password
-        }
-        login_response = requests.post(login_url, data=login_data, verify=False)
-
-        # Save headers and cookies to files
+# Save headers and cookies to files
         headers_file = 'headers.txt'
         cookies_file = 'cookies.txt'
         with open(headers_file, 'w') as f:
@@ -47,4 +25,9 @@ class Command(BaseCommand):
         fortigate_status = FortiGateStatus(response_data=status_response.json())
         fortigate_status.save()
 
-        self.stdout.write(self.style.SUCCESS('Successfully fetched and saved FortiGate status'))
+        # Save the policy command to the database
+        policy_command = f'curl -k -i -X GET {status_url} -b {headers_file}'
+        fortigate_policy = FortiGatePolicy(command=policy_command)
+        fortigate_policy.save()
+
+        self.stdout.write(self.style.SUCCESS('Successfully fetched and saved FortiGate status and policy command'))
