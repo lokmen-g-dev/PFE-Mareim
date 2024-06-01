@@ -31,3 +31,6 @@
         fortigate_policy.save()
 
         self.stdout.write(self.style.SUCCESS('Successfully fetched and saved FortiGate status and policy command'))
+
+
+from api.models import FortiGateStatus, FortiGatePolicy
